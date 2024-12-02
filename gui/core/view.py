@@ -3,11 +3,12 @@ from typing import Generic, TypeVar, Optional
 from .renderer import Renderer
 from .events import Event
 from ..utils.logging_mixin import LoggingMixin
+from ..modifiers import Modifiers
 
 T = TypeVar("T")
 
 
-class View(LoggingMixin, ABC, Generic[T]):
+class View(LoggingMixin, Modifiers, ABC, Generic[T]):
     """
     Abstract base class for all visual components.
     """
