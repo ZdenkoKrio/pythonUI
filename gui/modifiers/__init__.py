@@ -22,17 +22,20 @@ Recommendation: Prefer creating new modifiers as mixins rather than using lambda
 
 
 from .modifiers import Modifiers
-from .enums import FontStyle, BorderStyle, AnimationTrigger
+from .enums import FontStyle, BorderStyle, AnimationTrigger, TextAlignment
 from .animation import BaseAnimationManager, Animation
+from .text_alignment_modifier import TextAlignmentModifier
 
 
 __all__ = [
     "Modifiers",
+    "TextAlignmentModifier",
 
     # Enums
     "FontStyle",
     "BorderStyle",
     "AnimationTrigger",
+    "TextAlignment",
 
     # Animations
     "BaseAnimationManager",

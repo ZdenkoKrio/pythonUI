@@ -1,77 +1,48 @@
-from core.view import View
-from core.renderer import Renderer
-from utils.logging import log_event
-from utils.rendering.styles import Style
+from ..core import View, Renderer
+from ..utils import log_event
 
 
-class Label(View):
+class Label(View[str]):
     """
-    Represents a label component with default parameters and styling support.
+    A simple label component for displaying text, where state is modified via modifiers.
     """
 
     def __init__(
         self,
-        x: int = 0,
-        y: int = 0,
+        x: int,
+        y: int,
         width: int = 200,
-        height: int = 30,
+        height: int = 50,
         text: str = "Label",
-        alignment: str = "left",  # Options: "left", "center", "right"
-        style: Style = Style(),
     ):
         """
-        Initializes a label component with default parameters.
+        Initializes a label component.
 
-        :param x: The x-coordinate of the label. Default is 0.
-        :param y: The y-coordinate of the label. Default is 0.
+        :param x: The x-coordinate of the label.
+        :param y: The y-coordinate of the label.
         :param width: The width of the label. Default is 200.
-        :param height: The height of the label. Default is 30.
-        :param text: The text of the label. Default is "Label".
-        :param alignment: The alignment of the text. Default is "left".
-        :param style: Style object defining text appearance. Default is Style().
+        :param height: The height of the label. Default is 50.
+        :param text: The initial text of the label.
         """
         super().__init__(x, y, width, height)
-        self._text = text
-        self._alignment = alignment
-        self._style = style
-
-        if alignment not in {"left", "center", "right"}:
-            raise ValueError("Alignment must be 'left', 'center', or 'right'.")
+        self.state = text  # The state stores the current text value
 
     @log_event
     def render(self, renderer: Renderer) -> None:
         """
-        Render the label using the provided renderer.
+        Renders the label using the provided renderer.
 
         :param renderer: The renderer responsible for drawing the label.
         """
-        renderer.render_label(
-            text=self._text,
-            x=self.x,
-            y=self.y,
-            width=self.width,
-            height=self.height,
-            style=self._style,
-            alignment=self._alignment,
-        )
+        self.apply_modifiers()  # Apply all modifiers before rendering
+        renderer.render_label(self)
 
-    @property
-    def text(self) -> str:
-        """Gets the text of the label."""
-        return self._text
+    def set_text(self, text: str) -> 'View':
+        """
+        Sets the text value in the state.
 
-    @text.setter
-    def text(self, value: str) -> None:
-        """Sets the text of the label."""
-        self._text = value
-
-    @property
-    def alignment(self) -> str:
-        """Gets the text alignment."""
-        return self._alignment
-
-    @property
-    def style(self) -> Style:
-        """Gets the style of the label."""
-        return self._style
-    
+        :param text: The new text value.
+        :return: Self for chaining.
+        """
+        self.state = text
+        return self

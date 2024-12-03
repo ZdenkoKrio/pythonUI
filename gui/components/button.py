@@ -1,58 +1,68 @@
-from ..core.view import View
-from ..core.renderer import Renderer
-from ..core.events import Event, EventType
-from ..utils.logging import log_event
-from typing import Optional
+from ..core import View, Renderer, Event, EventType
+from .interactive_component import InteractiveComponent
+from .label import Label
+from typing import Optional, Callable
+from ..utils import log_event
 
 
-class Button(View):
+class Button(View[bool], InteractiveComponent):
     """
-    Represents a button component with default parameters.
+    A button component with a text label and click functionality.
     """
 
     def __init__(
         self,
-        x: int = 0,
-        y: int = 0,
+        x: int,
+        y: int,
         width: int = 100,
         height: int = 50,
-        label: str = "Button",
-        callback: Optional[callable] = None,
+        text: str = "Button",
+        callback: Optional[Callable[[], None]] = None,
     ):
         """
-        Initializes a button component with default parameters.
+        Initializes a button component.
 
-        :param x: The x-coordinate of the button. Default is 0.
-        :param y: The y-coordinate of the button. Default is 0.
+        :param x: The x-coordinate of the button.
+        :param y: The y-coordinate of the button.
         :param width: The width of the button. Default is 100.
         :param height: The height of the button. Default is 50.
-        :param label: The text label of the button. Default is "Button".
-        :param callback: A callable function to execute on button click. Default is None.
+        :param text: The text of the button.
+        :param callback: A callable function to execute on button click.
         """
         super().__init__(x, y, width, height)
-        self._label = label
+        self.state = False  # Button's default state (not clicked)
+        self.text_label = Label(0, 0, width, height, text)  # Inner label for text
         self._callback = callback
 
     @log_event
     def render(self, renderer: Renderer) -> None:
         """
-        Render the button using the provided renderer.
+        Renders the button and its inner text label.
 
         :param renderer: The renderer responsible for drawing the button.
         """
-        renderer.render_button(self)
+        self.apply_modifiers()  # Apply all modifiers to the button
+        renderer.render_button(self)  # Render the button itself
+        self.text_label.render(renderer)  # Render the inner label for text
 
-    @log_event
     def handle_event(self, event: Event) -> None:
         """
-        Handle events for the button.
+        Handles click events for the button.
 
         :param event: The event to handle.
         """
-        if event.is_type(EventType.CLICK) and self._callback:
-            self._callback()
+        if event.is_type(EventType.CLICK):
+            self.state = True
+            if self._callback:
+                self._callback()
+            self.state = False  # Reset state after the callback
 
-    @property
-    def label(self) -> str:
-        """Gets the label of the button."""
-        return self._label
+    def set_text(self, text: str) -> 'Button':
+        """
+        Sets the text of the button.
+
+        :param text: The new text value.
+        :return: Self for chaining.
+        """
+        self.text_label.set_text(text)
+        return self

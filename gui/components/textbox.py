@@ -1,62 +1,66 @@
-from core.view import View
-from core.renderer import Renderer
-from core.events import Event, EventType
-from utils.logging import log_event
+from ..core import View, Renderer, Event, EventType
+from .interactive_component import InteractiveComponent
+from ..utils import log_event
 
 
-class TextBox(View):
+class TextBox(View[str], InteractiveComponent):
     """
-    Represents a text box component with default parameters.
+    A text box component for user input, managing text directly via state.
     """
 
     def __init__(
         self,
-        x: int = 0,
-        y: int = 0,
-        width: int = 200,
-        height: int = 30,
+        x: int,
+        y: int,
+        width: int = 300,
+        height: int = 50,
+        text: str = "",
         placeholder: str = "Enter text...",
     ):
         """
-        Initializes a text box component with default parameters.
+        Initializes a text box component.
 
-        :param x: The x-coordinate of the text box. Default is 0.
-        :param y: The y-coordinate of the text box. Default is 0.
-        :param width: The width of the text box. Default is 200.
-        :param height: The height of the text box. Default is 30.
-        :param placeholder: Placeholder text for the text box. Default is "Enter text...".
+        :param x: The x-coordinate of the text box.
+        :param y: The y-coordinate of the text box.
+        :param width: The width of the text box. Default is 300.
+        :param height: The height of the text box. Default is 50.
+        :param text: The initial text of the text box. Default is an empty string.
+        :param placeholder: Placeholder text when no input is provided.
         """
         super().__init__(x, y, width, height)
-        self._text = ""
+        self.state = text  # The current text value
         self._placeholder = placeholder
 
     @log_event
     def render(self, renderer: Renderer) -> None:
         """
-        Render the text box using the provided renderer.
+        Renders the text box, displaying state or placeholder if state is empty.
 
         :param renderer: The renderer responsible for drawing the text box.
         """
-        renderer.render_textbox(self)
+        self.apply_modifiers()
+        text_to_display = self.state or self._placeholder
+        renderer.render_textbox(self, text_to_display)
 
-    @log_event
     def handle_event(self, event: Event) -> None:
         """
-        Handle events for the text box.
+        Handles events for the text box.
 
         :param event: The event to handle.
         """
         if event.is_type(EventType.KEY_PRESS):
-            key = event.get_data(str)
-            if key:
-                self._text += key
-
-    @property
-    def text(self) -> str:
-        """Gets the current text in the text box."""
-        return self._text
+            key = event.data.get("key", "")
+            if key == "BACKSPACE" and self.state:
+                self.state = self.state[:-1]  # Remove last character
+            elif len(key) == 1:  # Only process single character inputs
+                self.state += key
 
     @property
     def placeholder(self) -> str:
-        """Gets the placeholder text of the text box."""
+        """Gets the placeholder text."""
         return self._placeholder
+
+    @placeholder.setter
+    def placeholder(self, value: str) -> None:
+        """Sets a new placeholder text."""
+        self._placeholder = value
