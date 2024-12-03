@@ -8,8 +8,10 @@ This module includes:
 
 from .logging_mixin import LoggingMixin
 from .logging import log_event
+from .observable import Observable
 
 __all__ = [
     "LoggingMixin",
     "log_event",
+    "Observable",
 ]
